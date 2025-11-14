@@ -1,17 +1,20 @@
-name: Run on Code Push
+name: Checks
 
-on:
-  push: # 🚀 Trigger: jab bhi koi push karega, workflow run hoga
-    branches:
-      - main # sirf main branch par push per run karega
+on: [push]
 
 jobs:
-  check:
-    runs-on: ubuntu-latest
-
+  test-lint:
+    name: Test and Lint
+    runs-on: ubuntu-24.04
     steps:
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Show a message
-        run: echo "Github Action successfully triggered on code push!"
+        uses: actions/checkout@v4
+      - name: Run Django tests in Docker
+        run: docker compose run --rm app sh -c "python manage.py test"
+      - name: Run linting (flake8) in Docker
+        run: docker compose run --rm app sh -c "flake8 ."
