@@ -1,0 +1,26 @@
+# Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+
+# VCS & editor metadata
+.git
+.gitignore
+.idea/
+.vscode/
+
+# Env files & secrets
+.env
+.env.*
+
+# Local files not needed in image
+media/
+staticfiles/
+node_modules/
+
+# Build context noise
+Dockerfile
+docker-compose.yml
+

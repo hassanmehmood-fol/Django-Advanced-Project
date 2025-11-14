@@ -1,0 +1,17 @@
+name: Run on Code Push
+
+on:
+  push: # 🚀 Trigger: jab bhi koi push karega, workflow run hoga
+    branches:
+      - main # sirf main branch par push per run karega
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Show a message
+        run: echo "Github Action successfully triggered on code push!"
