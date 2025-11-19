@@ -42,4 +42,6 @@ urlpatterns = [
     path('api/schema.yaml', schema_view.without_ui(cache_timeout=0), name='schema-yaml'),
 
     path('api/', include('user.urls')),
+
+    path('api/', include('recipe.urls'))
 ]

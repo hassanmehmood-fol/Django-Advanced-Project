@@ -21,7 +21,10 @@ class LoginAPIView(APIView):
     serializer_class = LoginSerializer
     permission_classes = []  # ← explicitly allow anyone to access login
 
-    @swagger_auto_schema(request_body=LoginSerializer)
+    @swagger_auto_schema(request_body=LoginSerializer, 
+    tags=['Login The User'],
+    )
+    
     def post(self, request, *args, **kwargs):
         refresh_token = request.data.get("refresh", None)
 
@@ -48,11 +51,25 @@ class LoginAPIView(APIView):
             serializer.to_representation(user),
             status=status.HTTP_200_OK
         )
-
-class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
+class UserUpdateAPIView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
         return self.request.user
+
+    @swagger_auto_schema(
+        tags=["Manage Users"],
+        operation_description="Update the logged-in user's details"
+    )
+    def put(self, request, *args, **kwargs):
+        return self.update(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=["Manage Users"],
+        operation_description="Partially update the logged-in user's details"
+    )
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
+
 
