@@ -14,6 +14,7 @@ from rest_framework import permissions
 class UserCreateAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = [] 
 
 
 # Login + refresh API with JWT token
@@ -51,6 +52,8 @@ class LoginAPIView(APIView):
             serializer.to_representation(user),
             status=status.HTTP_200_OK
         )
+
+
 class UserUpdateAPIView(generics.UpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]

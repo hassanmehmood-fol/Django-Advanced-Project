@@ -78,3 +78,72 @@ class TagListAPIView(generics.ListAPIView):
     )
     def get_queryset(self):
         return Tag.objects.filter(user=self.request.user).order_by('name')
+
+        
+
+class RecipeUpdateDeleteAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Update Recipe'],
+        operation_description="Update recipe using PUT",
+        request_body=RecipeSerializer,
+        responses={200: RecipeSerializer}
+    )
+    def put(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id, user=request.user)
+        except Recipe.DoesNotExist:
+            return Response({"error": "Recipe not found"}, status=404)
+
+        serializer = RecipeSerializer(
+            recipe,
+            data=request.data,
+            context={'user': request.user}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    @swagger_auto_schema(
+        tags=['Update Recipe'],
+        operation_description="Update partial recipe using PATCH",
+        request_body=RecipeSerializer,
+        responses={200: RecipeSerializer}
+    )
+    def patch(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id, user=request.user)
+        except Recipe.DoesNotExist:
+            return Response({"error": "Recipe not found"}, status=404)
+
+        serializer = RecipeSerializer(
+            recipe,
+            data=request.data,
+            partial=True,
+            context={'user': request.user}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+
+        return Response(serializer.errors, status=400)
+
+    @swagger_auto_schema(
+        tags=['Delete Recipe'],
+        operation_description="Delete a recipe",
+        responses={204: "No content"}
+    )
+    def delete(self, request, id):
+        try:
+            recipe = Recipe.objects.get(id=id, user=request.user)
+        except Recipe.DoesNotExist:
+            return Response({"error": "Recipe not found"}, status=404)
+
+        recipe.delete()
+        return Response(status=204)
+

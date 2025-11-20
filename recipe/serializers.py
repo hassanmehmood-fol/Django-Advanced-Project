@@ -55,4 +55,31 @@ class RecipeSerializer(serializers.ModelSerializer):
         return recipe
 
 
+    def update(self, instance, validated_data):
+    # Extract tags if provided
+     tags_data = validated_data.pop('tags', None)
+
+    # Update normal fields
+     for attr, value in validated_data.items():
+        setattr(instance, attr, value)
+
+     instance.save()
+
+    # If tags provided → reset and update them
+     if tags_data is not None:
+        instance.tags.clear()
+        user = self.context['user']
+
+        for tag_data in tags_data:
+            tag, created = Tag.objects.get_or_create(
+                user=user,
+                name=tag_data['name']
+            )
+            instance.tags.add(tag)
+
+     return instance
+
+
+
+
   
