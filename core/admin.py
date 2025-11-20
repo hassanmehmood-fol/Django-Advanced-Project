@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from core.models import User ,Recipe
+from core.models import Ingredient, User ,Recipe
 
 class UserAdmin(BaseUserAdmin):
     # Fields to display in admin
@@ -22,7 +22,7 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'name', 'password1', 'password2', 'is_staff', 'is_active', 'is_superuser'),
         }),
     )
-    
+
 admin.site.register(User, UserAdmin)
 
 
@@ -34,4 +34,5 @@ class RecipeAdmin(admin.ModelAdmin):
     ordering = ('title',)
 
 admin.site.register(Recipe)
+admin.site.register(Ingredient)
 

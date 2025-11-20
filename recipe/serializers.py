@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from core.models import Recipe, Tag
+from core.models import Recipe, Tag , Ingredient
 import logging
 
 logger = logging.getLogger(__name__)
@@ -11,47 +11,44 @@ class TagListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = ['id', 'name']
+        read_only_fields = ['id']
+
 # Serializer for Recipe model
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagListSerializer(many=True, required=False)
     price = serializers.DecimalField(max_digits=7, decimal_places=2)
+    ingredients=IngredientSerializer(many=True, required=False)
 
     class Meta:
         model = Recipe
-        fields = ['id', 'user', 'title', 'description', 'time_minutes', 'price', 'link', 'tags']
+        fields = ['id', 'user', 'title', 'description', 'time_minutes', 'price', 'link', 'tags' , 'ingredients']
         read_only_fields = ['id', 'user']
 
     def create(self, validated_data):
-        # Step 1: Extract tags
         tags_data = validated_data.pop('tags', [])
-        print("DEBUG: Tags extracted from validated_data:", tags_data)
-        logger.debug(f"Tags extracted: {tags_data}")
+        ingredients_data = validated_data.pop('ingredients', [])  # NEW
 
-        # Step 2: Get user from context
         user = self.context['user'] if 'user' in self.context else None
-        print("DEBUG: User from context:", user)
-        logger.debug(f"User for recipe: {user}")
-
         if not user:
             raise serializers.ValidationError("User is required to create a recipe.")
 
-        # Step 3: Create recipe
-        print("DEBUG: Creating recipe with data:", validated_data)
+        # Create the recipe
         recipe = Recipe.objects.create(user=user, **validated_data)
-        print("DEBUG: Recipe created with ID:", recipe.id)
-        logger.debug(f"Recipe created: {recipe}")
 
-        # Step 4: Handle tags
+        # Handle tags
         for tag_data in tags_data:
-            tag, created = Tag.objects.get_or_create(
-                user=user,
-                name=tag_data['name']
-            )
+            tag, created = Tag.objects.get_or_create(user=user, name=tag_data['name'])
             recipe.tags.add(tag)
-            print(f"DEBUG: Tag '{tag.name}' {'created' if created else 'exists'}, added to recipe")
-            logger.debug(f"Tag {tag.name} ({'new' if created else 'existing'}) added to recipe {recipe.id}")
 
-        # Step 5: Return recipe
+        # Handle ingredients
+        for ingredient_data in ingredients_data:
+            ingredient, created = Ingredient.objects.get_or_create(user=user, name=ingredient_data['name'])
+            recipe.ingredients.add(ingredient)  # if you have ManyToManyField in Recipe for ingredients
+
         return recipe
 
 
@@ -78,6 +75,7 @@ class RecipeSerializer(serializers.ModelSerializer):
             instance.tags.add(tag)
 
      return instance
+
 
 
 

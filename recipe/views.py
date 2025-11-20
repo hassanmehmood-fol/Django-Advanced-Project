@@ -1,10 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions , generics
-from core.models import Recipe , Tag
+from core.models import Recipe , Tag , Ingredient
 from recipe.serializers import RecipeSerializer
 from drf_yasg.utils import swagger_auto_schema
-from .serializers import TagListSerializer
+from .serializers import TagListSerializer , IngredientSerializer
+
+
 
 class RecipeListAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -146,4 +148,21 @@ class RecipeUpdateDeleteAPIView(APIView):
 
         recipe.delete()
         return Response(status=204)
+
+class IngredientListAPIView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        tags=['Get Ingredients List'],
+        operation_description="Get all ingredients of the logged-in user",
+        responses={200: IngredientSerializer(many=True)}
+    )
+    def get(self, request):
+        """
+        List all ingredients for the logged-in user.
+        """
+        ingredients = Ingredient.objects.filter(user=request.user).order_by('name')
+        serializer = IngredientSerializer(ingredients, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
