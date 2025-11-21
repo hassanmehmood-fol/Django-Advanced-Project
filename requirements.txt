@@ -5,3 +5,4 @@ psycopg2-binary
 drf-yasg==1.21.11
  
 djangorestframework-simplejwt
+drf-spectacular

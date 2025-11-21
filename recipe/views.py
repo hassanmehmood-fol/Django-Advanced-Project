@@ -5,7 +5,9 @@ from core.models import Recipe , Tag , Ingredient
 from recipe.serializers import RecipeSerializer
 from drf_yasg.utils import swagger_auto_schema
 from .serializers import TagListSerializer , IngredientSerializer
+from drf_yasg import openapi
 
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
 class RecipeListAPIView(APIView):
@@ -13,17 +15,33 @@ class RecipeListAPIView(APIView):
 
     @swagger_auto_schema(
         tags=['Get The List Of All Recipes'],
-        operation_description="List all recipes",
+        operation_description="List all recipes. Use ?tags=1,2 to filter by tag IDs.",
+        manual_parameters=[
+            openapi.Parameter(
+                'tags',
+                openapi.IN_QUERY,
+                description="Comma separated tag IDs for filtering (e.g: 1,2,3)",
+                type=openapi.TYPE_STRING
+            )
+        ],
         responses={200: RecipeSerializer(many=True)}
     )
-
+    
     def get(self, request):
         """
-        List all recipes (all users).
+        List all recipes (all users) + filtering by tags.
         """
-        recipes = Recipe.objects.all().order_by('-id')  
+        recipes = Recipe.objects.all().order_by('-id')
+
+        # --- filtering ---
+        tag_ids = request.query_params.get("tags")
+        if tag_ids:
+            tag_ids = [int(tag) for tag in tag_ids.split(",")]
+            recipes = recipes.filter(tags__id__in=tag_ids).distinct()
+
         serializer = RecipeSerializer(recipes, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class RecipeCreateAPIView(APIView):
@@ -164,5 +182,9 @@ class IngredientListAPIView(APIView):
         ingredients = Ingredient.objects.filter(user=request.user).order_by('name')
         serializer = IngredientSerializer(ingredients, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
+
 
 
